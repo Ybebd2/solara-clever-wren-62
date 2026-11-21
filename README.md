@@ -1,3 +1,7 @@
+[![make.fun · gta6-01](https://make.fun/badge/gta6-01.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![rank](https://make.fun/badge/gta6-01/Ybebd2/solara-clever-wren-62/rank.svg)](https://make.fun/bounty/gta6-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![reward](https://make.fun/badge/gta6-01/Ybebd2/solara-clever-wren-62/reward.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+
 # SOLARA — Vice City of the New South
 
 ![SOLARA](screenshots/shot-1.png)
@@ -71,3 +75,5 @@ mouse drag to orbit the camera.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+Referral code: `mpd7ezsn`
