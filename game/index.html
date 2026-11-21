@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLARA — Vice City of the New South</title>
+<link rel="icon" href="favicon.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a1420;
+    font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; }
+  #game-canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+
+  /* start screen */
+  #start-screen { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px;
+    background: linear-gradient(180deg, rgba(10,20,40,0.55) 0%, rgba(10,20,40,0.25) 45%, rgba(20,8,40,0.72) 100%); }
+  #start-screen h1 { font-size: 84px; letter-spacing: 14px; font-weight: 900;
+    background: linear-gradient(90deg, #ffd600, #ff6d00, #e040fb, #4fc3f7);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 42px rgba(255, 109, 0, 0.45); }
+  #start-screen h2 { font-size: 20px; letter-spacing: 6px; color: #b3e5fc; font-weight: 600; }
+  #start-screen p.tag { font-size: 15px; color: #e1f5fe; max-width: 560px; text-align: center; line-height: 1.5; }
+  .menu-btn { width: 300px; padding: 14px 20px; font-size: 20px; font-weight: 800; letter-spacing: 3px;
+    color: #1a1a1a; background: linear-gradient(90deg, #ffd600, #ff9100); border: none; border-radius: 10px;
+    cursor: pointer; box-shadow: 0 6px 24px rgba(255, 145, 0, 0.5); }
+  .menu-btn:hover { transform: translateY(-2px); }
+  .menu-btn.alt { background: rgba(255,255,255,0.14); color: #fff; box-shadow: none; border: 1px solid rgba(255,255,255,0.35); }
+  #start-screen .controls { font-size: 13px; color: #cfd8dc; text-align: center; line-height: 1.7; }
+
+  /* HUD */
+  #hud { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+  #hud-top { position: absolute; top: 14px; left: 16px; display: flex; flex-direction: column; gap: 4px; }
+  #hud-cash { font-size: 30px; font-weight: 900; color: #69f0ae; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+  #hud-rank { font-size: 14px; letter-spacing: 2px; color: #ffd600; text-shadow: 0 1px 4px #000; }
+  #hud-district { font-size: 12px; letter-spacing: 3px; color: #b3e5fc; text-shadow: 0 1px 4px #000; }
+  #hud-stars { position: absolute; top: 14px; right: 170px; font-size: 26px; letter-spacing: 4px; text-shadow: 0 2px 6px #000; }
+  #hud-radio { position: absolute; top: 52px; right: 170px; font-size: 13px; color: #e040fb; text-shadow: 0 1px 4px #000; }
+  #hud-mission { position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+    width: 420px; background: rgba(8,16,28,0.72); border: 1px solid rgba(255,214,0,0.5); border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; line-height: 1.5; text-align: center; }
+  #hud-mission b { color: #ffd600; }
+  #hud-bars { position: absolute; right: 16px; bottom: 16px; width: 220px; display: flex; flex-direction: column; gap: 6px; }
+  .bar { height: 14px; background: rgba(0,0,0,0.6); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.3); }
+  .bar > div { height: 100%; }
+  #hud-health-fill { background: linear-gradient(90deg, #00e676, #76ff03); width: 100%; }
+  #hud-armour-fill { background: linear-gradient(90deg, #2979ff, #4fc3f7); width: 40%; }
+  #hud-ammo { font-size: 18px; font-weight: 800; text-align: right; text-shadow: 0 1px 4px #000; }
+  #hud-geckos { font-size: 14px; text-align: right; color: #ffd600; text-shadow: 0 1px 4px #000; }
+  #minimap { position: absolute; right: 16px; top: 14px; width: 140px; height: 140px;
+    border: 2px solid rgba(255,255,255,0.5); border-radius: 8px; background: rgba(10,18,28,0.85); }
+  #hud-message { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);
+    font-size: 18px; font-weight: 700; color: #fff; text-shadow: 0 2px 8px #000; text-align: center; max-width: 80%; }
+  #hud-dialogue { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    width: 620px; max-width: 86vw; background: rgba(8,16,28,0.88); border: 1px solid #e040fb;
+    border-radius: 12px; padding: 12px 16px; display: none; }
+  #hud-dialogue.show { display: flex; gap: 14px; align-items: center; }
+  #dlg-portrait { width: 52px; height: 52px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, #e040fb, #ff9100); display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 900; color: #fff; }
+  #dlg-speaker { font-size: 13px; letter-spacing: 2px; color: #e040fb; font-weight: 800; }
+  #dlg-text { font-size: 15px; line-height: 1.45; }
+  #error-line { position: fixed; left: 8px; bottom: 4px; z-index: 50; color: #ff5252; font-size: 12px; }
+  #hud-help { position: absolute; left: 16px; bottom: 16px; font-size: 11px; color: rgba(255,255,255,0.65);
+    text-shadow: 0 1px 3px #000; line-height: 1.6; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.min.js" } }
+</script>
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+
+<div id="hud">
+  <div id="hud-top">
+    <div id="hud-cash">$250</div>
+    <div id="hud-rank">ROOKIE • 0/8</div>
+    <div id="hud-district">SOLARA CITY</div>
+  </div>
+  <div id="hud-stars">☆☆☆☆☆</div>
+  <div id="hud-radio">♪ SOLARA 98.3</div>
+  <canvas id="minimap" width="140" height="140"></canvas>
+  <div id="hud-mission"><b>Next job: LUPE — First Fix</b><br>Meet Lupe at MO'S on Neon Row. She has your first job.<br>Press E at the yellow marker at MO'S</div>
+  <div id="hud-message"></div>
+  <div id="hud-dialogue">
+    <div id="dlg-portrait">K</div>
+    <div><div id="dlg-speaker">LUPE</div><div id="dlg-text"></div></div>
+  </div>
+  <div id="hud-bars">
+    <div class="bar"><div id="hud-health-fill"></div></div>
+    <div class="bar"><div id="hud-armour-fill"></div></div>
+    <div id="hud-ammo">VESPER 12 / 48</div>
+    <div id="hud-geckos">🦎 0/20</div>
+  </div>
+  <div id="hud-help">WASD move • SHIFT sprint • SPACE jump • E mission • F car • R reload • 1-5 weapons<br>
+  Q radio • M map • F9 autopilot • Z/X/C crew (Mara / Sully / Kiki) • ESC pause</div>
+</div>
+
+<div id="start-screen">
+  <h1>SOLARA</h1>
+  <h2>VICE CITY OF THE NEW SOUTH</h2>
+  <p class="tag">Kai Vega came back to Solara with $250 and a borrowed pistol. Eight jobs stand
+  between him and the Fixer crown — Lupe, Sully, Marco, Brandt and Aurora are waiting.
+  Drive fast. Lose the heat. Take the whole city.</p>
+  <button id="start-btn" class="menu-btn">NEW GAME</button>
+  <button id="load-btn" class="menu-btn alt">LOAD</button>
+  <button id="settings-btn" class="menu-btn alt">SETTINGS</button>
+  <div class="controls">WASD move &nbsp;•&nbsp; Mouse drag to look &nbsp;•&nbsp; E start mission &nbsp;•&nbsp; F enter car<br>
+  20 Golden Geckos hidden across the city • NEON 101.5 on the radio</div>
+</div>
+
+<div id="error-line"></div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
